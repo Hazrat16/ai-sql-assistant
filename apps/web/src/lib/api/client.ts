@@ -1,5 +1,7 @@
 import { getApiBaseUrl } from "./config";
 import type {
+  CompileQueryRequest,
+  CompileQueryResponse,
   ExecuteQueryRequest,
   ExecuteQueryResponse,
   NaturalQueryRequest,
@@ -67,6 +69,20 @@ export async function postExecuteQuery(
     body: JSON.stringify(body),
   });
   const data = await parseJson<ExecuteQueryResponse>(res);
+  if (!res.ok) throw buildError(res, data);
+  return data;
+}
+
+export async function postCompileQuery(
+  body: CompileQueryRequest,
+): Promise<CompileQueryResponse> {
+  const base = getApiBaseUrl();
+  const res = await fetch(`${base}/compile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await parseJson<CompileQueryResponse>(res);
   if (!res.ok) throw buildError(res, data);
   return data;
 }

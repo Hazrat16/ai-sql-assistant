@@ -10,6 +10,7 @@ import { SchemaSidebar } from "@/features/schema/components/schema-sidebar";
 import { QueryHistory } from "@/features/history/components/query-history";
 import { ExplanationPanel } from "@/features/explanation/components/explanation-panel";
 import { ResultViewer } from "@/features/results/components/result-viewer";
+import { CompilePanel } from "@/features/compile/components/compile-panel";
 import { ExecutionProvider } from "@/features/dashboard/providers/execution-provider";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { isApiConfigured } from "@/lib/api/config";
@@ -93,10 +94,13 @@ function DashboardInner() {
           </section>
 
           <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 lg:flex-1">
-            <div className="min-h-[200px] shrink-0 lg:min-h-0 lg:flex-[0.35]">
+            <div className="min-h-[180px] shrink-0 lg:min-h-0 lg:flex-[0.27]">
               <ExplanationPanel />
             </div>
-            <div className="min-h-[240px] flex-1">
+            <div className="min-h-[220px] shrink-0 lg:min-h-0 lg:flex-[0.33]">
+              <CompilePanel />
+            </div>
+            <div className="min-h-[240px] lg:flex-[0.4]">
               <ResultViewer />
             </div>
           </section>

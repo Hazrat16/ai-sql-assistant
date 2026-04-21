@@ -36,6 +36,17 @@ export interface ExecuteQueryResponse {
   rows: SqlRow[];
 }
 
+export interface CompileQueryRequest {
+  sql: string;
+}
+
+export interface CompileQueryResponse {
+  valid: true;
+  normalizedSql: string;
+  statementType: "SELECT";
+  readOnly: true;
+}
+
 export interface ApiErrorBody {
   error?: string;
   message?: string;

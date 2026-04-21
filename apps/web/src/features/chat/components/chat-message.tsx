@@ -8,10 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface ChatMessageProps {
   message: ChatMessageModel;
   onRunSql?: (sql: string) => void;
+  onCompileSql?: (sql: string) => void;
   isExecuting?: boolean;
+  isCompiling?: boolean;
 }
 
-export function ChatMessage({ message, onRunSql, isExecuting }: ChatMessageProps) {
+export function ChatMessage({ message, onRunSql, onCompileSql, isExecuting, isCompiling }: ChatMessageProps) {
   const isUser = message.role === "user";
 
   return (
@@ -47,7 +49,9 @@ export function ChatMessage({ message, onRunSql, isExecuting }: ChatMessageProps
               <SqlCodeBlock
                 sql={message.sql}
                 onRun={onRunSql ? () => onRunSql(message.sql!) : undefined}
+                onCompile={onCompileSql ? () => onCompileSql(message.sql!) : undefined}
                 isRunning={isExecuting}
+                isCompiling={isCompiling}
               />
             ) : null}
           </>

@@ -8,6 +8,7 @@ import { ChatMessage } from "./chat-message";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { useNaturalLanguageQuery } from "@/hooks/use-natural-language-query";
 import { useExecution } from "@/features/dashboard/providers/execution-provider";
+import { useCompileQuery } from "@/hooks/use-compile-query";
 
 export function ChatPanel() {
   const messages = useDashboardStore((s) => s.messages);
@@ -20,6 +21,7 @@ export function ChatPanel() {
   const { mutate: nlMutate, isLoading: nlLoading, error: nlError, usedFallback: nlFallback } =
     useNaturalLanguageQuery();
   const { mutate: execMutate, isLoading: execLoading } = useExecution();
+  const { mutate: compileMutate, isLoading: compileLoading } = useCompileQuery();
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -80,6 +82,31 @@ export function ChatPanel() {
     [execMutate, setActiveQuery, setResultRows],
   );
 
+  const handleCompileSql = useCallback(
+    async (sql: string) => {
+      const { data, error } = await compileMutate(sql);
+      if (error || !data) {
+        appendMessage({
+          role: "assistant",
+          status: "done",
+          content: `Compile failed: ${error ?? "Unknown error"}`,
+          error: error ?? "Compile failed",
+        });
+        return;
+      }
+
+      appendMessage({
+        role: "assistant",
+        status: "done",
+        content:
+          "Compile successful. SQL is valid, read-only, and safe to execute. I normalized the query text before validation.",
+        sql: data.normalizedSql,
+      });
+      setActiveQuery(data.normalizedSql, "Compilation successful. Ready to run.");
+    },
+    [appendMessage, compileMutate, setActiveQuery],
+  );
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1 py-2">
@@ -97,7 +124,9 @@ export function ChatPanel() {
             key={m.id}
             message={m}
             onRunSql={handleRunSql}
+            onCompileSql={handleCompileSql}
             isExecuting={execLoading}
+            isCompiling={compileLoading}
           />
         ))}
         <div ref={bottomRef} />
