@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,14 +16,15 @@ import { isApiConfigured } from "@/lib/api/config";
 
 function DashboardInner() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeRightPanel, setActiveRightPanel] = useState<"results" | "explain" | "compile">("results");
   const clearChat = useDashboardStore((s) => s.clearChat);
   const nlLoading = useDashboardStore((s) =>
     s.messages.some((m) => m.role === "assistant" && m.status === "pending"),
   );
 
   return (
-    <div className="flex h-[100dvh] flex-col bg-zinc-100 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
-      <header className="flex items-center justify-between gap-3 border-b border-zinc-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
+    <div className="flex h-dvh flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
+      <header className="flex items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
         <div className="flex min-w-0 items-center gap-3">
           <Button
             type="button"
@@ -38,7 +38,7 @@ function DashboardInner() {
             Menu
           </Button>
           <div className="min-w-0">
-            <h1 className="truncate text-sm font-semibold tracking-tight sm:text-base">AI SQL Assistant</h1>
+            <h1 className="truncate text-sm font-semibold sm:text-base">AI SQL Assistant</h1>
             <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
               {isApiConfigured() ? "Connected to API" : "Demo mode — set NEXT_PUBLIC_API_URL to reach your backend"}
             </p>
@@ -52,59 +52,67 @@ function DashboardInner() {
         </div>
       </header>
 
-      <div className="relative flex min-h-0 flex-1 flex-col lg:flex-row">
-        <AnimatePresence>
-          {sidebarOpen ? (
-            <motion.button
-              type="button"
-              aria-label="Close menu"
-              className="fixed inset-0 z-30 bg-black/40 lg:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSidebarOpen(false)}
-            />
-          ) : null}
-        </AnimatePresence>
-
+      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[280px_minmax(420px,1fr)_minmax(320px,420px)] lg:gap-3 lg:p-3">
         <aside
           id="app-sidebar"
-          className={`fixed inset-y-0 left-0 z-40 flex w-[min(100%,320px)] -translate-x-full flex-col gap-3 border-r border-zinc-200 bg-zinc-50 p-3 transition-transform dark:border-zinc-800 dark:bg-zinc-950 lg:static lg:z-0 lg:w-[300px] lg:translate-x-0 lg:flex-shrink-0 ${
-            sidebarOpen ? "translate-x-0" : ""
-          }`}
+          className={`${
+            sidebarOpen ? "flex" : "hidden"
+          } min-h-0 flex-col gap-3 border-b border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950 lg:flex lg:border lg:rounded-xl`}
         >
+          <div className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Data</div>
           <div className="min-h-0 flex-1 overflow-hidden">
             <SchemaSidebar />
           </div>
-          <div className="h-[38%] min-h-[180px] overflow-hidden">
+          <div className="h-[36%] min-h-[170px] overflow-hidden">
             <QueryHistory />
           </div>
         </aside>
 
-        <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 p-3 lg:flex-row">
-          <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 lg:max-w-[min(720px,52%)]">
-            <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              <CardContent className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-                <div className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                  Conversation
-                </div>
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 p-3 lg:p-0">
+          <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+            <div className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Ask SQL</div>
+            <Card className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl">
+              <CardContent className="flex min-h-0 flex-1 flex-col p-4">
                 <ChatPanel />
               </CardContent>
             </Card>
           </section>
-
-          <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 lg:flex-1">
-            <div className="min-h-[180px] shrink-0 lg:min-h-0 lg:flex-[0.27]">
-              <ExplanationPanel />
-            </div>
-            <div className="min-h-[220px] shrink-0 lg:min-h-0 lg:flex-[0.33]">
-              <CompilePanel />
-            </div>
-            <div className="min-h-[240px] lg:flex-[0.4]">
-              <ResultViewer />
-            </div>
-          </section>
         </main>
+
+        <section className="flex min-h-0 min-w-0 flex-col gap-2 border-t border-zinc-200 p-3 dark:border-zinc-800 lg:border-0 lg:p-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Output</div>
+            <div className="inline-flex rounded-lg border border-zinc-200 bg-white p-1 text-xs dark:border-zinc-800 dark:bg-zinc-900">
+              <button
+                type="button"
+                className={`rounded px-2 py-1 ${activeRightPanel === "results" ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "text-zinc-600 dark:text-zinc-300"}`}
+                onClick={() => setActiveRightPanel("results")}
+              >
+                Results
+              </button>
+              <button
+                type="button"
+                className={`rounded px-2 py-1 ${activeRightPanel === "explain" ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "text-zinc-600 dark:text-zinc-300"}`}
+                onClick={() => setActiveRightPanel("explain")}
+              >
+                Explain
+              </button>
+              <button
+                type="button"
+                className={`rounded px-2 py-1 ${activeRightPanel === "compile" ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "text-zinc-600 dark:text-zinc-300"}`}
+                onClick={() => setActiveRightPanel("compile")}
+              >
+                Compile
+              </button>
+            </div>
+          </div>
+
+          <div className="min-h-[260px] flex-1">
+            {activeRightPanel === "results" ? <ResultViewer /> : null}
+            {activeRightPanel === "explain" ? <ExplanationPanel /> : null}
+            {activeRightPanel === "compile" ? <CompilePanel /> : null}
+          </div>
+        </section>
       </div>
     </div>
   );

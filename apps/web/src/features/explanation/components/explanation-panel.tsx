@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStore } from "@/store/dashboard-store";
@@ -15,7 +14,7 @@ export function ExplanationPanel() {
   return (
     <Card className="h-full min-h-0 border-zinc-200/80 dark:border-zinc-800">
       <CardHeader>
-        <CardTitle className="text-sm">Query explanation</CardTitle>
+        <CardTitle className="text-sm">Explanation</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
         {isLoading && !explanation ? (
@@ -25,14 +24,14 @@ export function ExplanationPanel() {
             <Skeleton className="h-3 w-[85%]" />
           </div>
         ) : explanation ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+          <div>
             <p>{explanation}</p>
             {sql ? (
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Tip: match column names to the schema on the left when you connect a real database.
               </p>
             ) : null}
-          </motion.div>
+          </div>
         ) : (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             After you generate SQL, a plain-language explanation will show here.

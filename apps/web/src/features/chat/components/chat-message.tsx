@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import type { ChatMessage as ChatMessageModel } from "@/store/dashboard-store";
 import { SqlCodeBlock } from "./sql-code-block";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,20 +16,17 @@ export function ChatMessage({ message, onRunSql, onCompileSql, isExecuting, isCo
   const isUser = message.role === "user";
 
   return (
-    <motion.article
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22 }}
-      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
-    >
+    <article className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[min(100%,52rem)] space-y-3 rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+        className={`max-w-[min(100%,52rem)] space-y-3 rounded-xl px-4 py-3 text-sm leading-relaxed ${
           isUser
-            ? "bg-emerald-600 text-white"
-            : "border border-zinc-200 bg-zinc-50 text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
+            ? "border border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50"
+            : "border border-zinc-200 bg-white text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
         }`}
       >
+        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          {isUser ? "You" : "Assistant"}
+        </p>
         {message.status === "pending" && !isUser ? (
           <div className="space-y-2">
             <Skeleton className="h-3 w-[75%]" />
@@ -57,6 +53,6 @@ export function ChatMessage({ message, onRunSql, onCompileSql, isExecuting, isCo
           </>
         )}
       </div>
-    </motion.article>
+    </article>
   );
 }

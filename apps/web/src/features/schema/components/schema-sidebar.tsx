@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDatabaseSchema } from "@/hooks/use-database-schema";
@@ -55,27 +54,18 @@ export function SchemaSidebar() {
                     <span className="text-xs text-zinc-500">{t.columns.length} cols</span>
                     <Chevron rotated={expanded} />
                   </button>
-                  <AnimatePresence initial={false}>
-                    {expanded ? (
-                      <motion.div
-                        key={`${t.name}-cols`}
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden border-t border-zinc-100 dark:border-zinc-900"
-                      >
-                        <ul className="px-3 py-2 text-xs">
-                          {t.columns.map((c) => (
-                            <li key={c.name} className="flex justify-between gap-2 py-0.5 text-zinc-600 dark:text-zinc-400">
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200">{c.name}</span>
-                              <span className="shrink-0 text-zinc-500">{c.type}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
+                  {expanded ? (
+                    <div className="overflow-hidden border-t border-zinc-100 dark:border-zinc-900">
+                      <ul className="px-3 py-2 text-xs">
+                        {t.columns.map((c) => (
+                          <li key={c.name} className="flex justify-between gap-2 py-0.5 text-zinc-600 dark:text-zinc-400">
+                            <span className="font-mono text-zinc-800 dark:text-zinc-200">{c.name}</span>
+                            <span className="shrink-0 text-zinc-500">{c.type}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                 </li>
               );
             })}
