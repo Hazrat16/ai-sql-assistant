@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { postExecuteQuery } from "@/lib/api/client";
 import { DUMMY_EXECUTE_RESULT } from "@/lib/api/dummy-data";
 import { isApiConfigured } from "@/lib/api/config";
+import { useConnectionStore } from "@/store/connection-store";
 import type { ExecuteQueryResponse, SqlRow } from "@/lib/api/types";
 
 export function useExecuteQuery() {
@@ -24,7 +25,11 @@ export function useExecuteQuery() {
         setUsedFallback(true);
         return result;
       }
-      const result = await postExecuteQuery({ sql });
+      const databaseUrl = useConnectionStore.getState().externalDatabaseUrl ?? undefined;
+      const result = await postExecuteQuery({
+        sql,
+        ...(databaseUrl ? { databaseUrl } : {}),
+      });
       setData(result);
       return result;
     } catch (e) {

@@ -6,6 +6,7 @@ import type {
   ExecuteQueryResponse,
   NaturalQueryRequest,
   NaturalQueryResponse,
+  SchemaConnectRequest,
   SchemaResponse,
 } from "./types";
 
@@ -54,6 +55,18 @@ export async function postNaturalQuery(
 export async function getSchema(): Promise<SchemaResponse> {
   const base = getApiBaseUrl();
   const res = await fetch(`${base}/schema`, { method: "GET" });
+  const data = await parseJson<SchemaResponse>(res);
+  if (!res.ok) throw buildError(res, data);
+  return data;
+}
+
+export async function postSchemaConnect(body: SchemaConnectRequest): Promise<SchemaResponse> {
+  const base = getApiBaseUrl();
+  const res = await fetch(`${base}/schema/connect`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   const data = await parseJson<SchemaResponse>(res);
   if (!res.ok) throw buildError(res, data);
   return data;

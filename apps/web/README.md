@@ -50,6 +50,7 @@ npm run dev
 - Frontend uses `NEXT_PUBLIC_API_URL` for all backend calls (`/query`, `/compile`, `/execute`, `/schema`).
 - If `NEXT_PUBLIC_API_URL` is empty, the app falls back to demo mode with sample data.
 - For full functionality, keep backend running on `http://localhost:8000` (or set your custom URL).
+- In the sidebar **External Postgres** box you can paste another `postgres://…` URL: schema, natural-language SQL, and **Run** target that database until you click **Reset to app DB**. The backend must allow this (`ALLOW_EXTERNAL_DATABASE_URL=true`).
 
 ## Run on a Fresh Machine (Quick Checklist)
 

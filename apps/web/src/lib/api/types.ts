@@ -4,6 +4,8 @@ export type SqlRow = Record<string, SqlPrimitive | unknown>;
 
 export interface NaturalQueryRequest {
   query: string;
+  /** Use this database's `public` schema / run generated SQL here when set. */
+  databaseUrl?: string;
 }
 
 export interface NaturalQueryResponse {
@@ -30,6 +32,11 @@ export interface SchemaResponse {
 
 export interface ExecuteQueryRequest {
   sql: string;
+  databaseUrl?: string;
+}
+
+export interface SchemaConnectRequest {
+  databaseUrl: string;
 }
 
 export interface ExecuteQueryResponse {

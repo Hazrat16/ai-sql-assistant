@@ -1,12 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDatabaseSchema } from "@/hooks/use-database-schema";
+import { useConnectionStore } from "@/store/connection-store";
 
 export function SchemaSidebar() {
   const { data, error, isLoading, usedFallback, refetch } = useDatabaseSchema();
+  const externalDatabaseUrl = useConnectionStore((s) => s.externalDatabaseUrl);
+  const setExternalDatabaseUrl = useConnectionStore((s) => s.setExternalDatabaseUrl);
+  const [draftUrl, setDraftUrl] = useState("");
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
   const tables = useMemo(() => data?.tables ?? [], [data?.tables]);
@@ -28,6 +33,55 @@ export function SchemaSidebar() {
         </button>
       </CardHeader>
       <CardContent className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50/80 p-2 dark:border-zinc-800 dark:bg-zinc-900/40">
+          <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            External Postgres
+          </div>
+          <textarea
+            value={draftUrl}
+            onChange={(e) => setDraftUrl(e.target.value)}
+            placeholder="postgres://user:pass@host:5432/dbname"
+            rows={2}
+            spellCheck={false}
+            autoComplete="off"
+            className="mb-2 w-full resize-none rounded-md border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[11px] text-zinc-900 outline-none ring-emerald-500/30 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+          />
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => {
+                const u = draftUrl.trim();
+                if (!u) return;
+                setExternalDatabaseUrl(u);
+              }}
+            >
+              Use this database
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs"
+              onClick={() => {
+                setDraftUrl("");
+                setExternalDatabaseUrl(null);
+              }}
+            >
+              Reset to app DB
+            </Button>
+          </div>
+          {externalDatabaseUrl ? (
+            <p className="mt-2 text-[11px] text-emerald-700 dark:text-emerald-400">
+              NL→SQL and Run use your linked URL (sent to this API only).
+            </p>
+          ) : (
+            <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+              Leave empty to use the server&apos;s default DATABASE_URL. Only postgres:// URLs.
+            </p>
+          )}
+        </div>
         {usedFallback && error ? (
           <p className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
             {error}. Showing bundled sample schema.

@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getSchema } from "@/lib/api/client";
+import { getSchema, postSchemaConnect } from "@/lib/api/client";
 import { DUMMY_SCHEMA } from "@/lib/api/dummy-data";
 import { isApiConfigured } from "@/lib/api/config";
+import { useConnectionStore } from "@/store/connection-store";
 import type { SchemaResponse } from "@/lib/api/types";
 
 export function useDatabaseSchema() {
+  const externalDatabaseUrl = useConnectionStore((s) => s.externalDatabaseUrl);
   const [data, setData] = useState<SchemaResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +24,9 @@ export function useDatabaseSchema() {
         setUsedFallback(true);
         return DUMMY_SCHEMA;
       }
-      const result = await getSchema();
+      const result = externalDatabaseUrl
+        ? await postSchemaConnect({ databaseUrl: externalDatabaseUrl })
+        : await getSchema();
       setData(result);
       return result;
     } catch (e) {
@@ -33,7 +37,7 @@ export function useDatabaseSchema() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [externalDatabaseUrl]);
 
   useEffect(() => {
     queueMicrotask(() => {

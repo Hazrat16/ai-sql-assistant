@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { postNaturalQuery } from "@/lib/api/client";
 import { DUMMY_NATURAL_RESPONSE } from "@/lib/api/dummy-data";
 import { isApiConfigured } from "@/lib/api/config";
+import { useConnectionStore } from "@/store/connection-store";
 import type { NaturalQueryResponse } from "@/lib/api/types";
 
 export function useNaturalLanguageQuery() {
@@ -23,7 +24,11 @@ export function useNaturalLanguageQuery() {
         setUsedFallback(true);
         return { data: fallback, error: null as string | null, usedFallback: true };
       }
-      const result = await postNaturalQuery({ query });
+      const databaseUrl = useConnectionStore.getState().externalDatabaseUrl ?? undefined;
+      const result = await postNaturalQuery({
+        query,
+        ...(databaseUrl ? { databaseUrl } : {}),
+      });
       setData(result);
       return { data: result, error: null as string | null, usedFallback: false };
     } catch (e) {
