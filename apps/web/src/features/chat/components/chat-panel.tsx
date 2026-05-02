@@ -17,6 +17,7 @@ export function ChatPanel() {
   const setActiveQuery = useDashboardStore((s) => s.setActiveQuery);
   const setResultRows = useDashboardStore((s) => s.setResultRows);
   const addHistory = useDashboardStore((s) => s.addHistory);
+  const clearChat = useDashboardStore((s) => s.clearChat);
 
   const { mutate: nlMutate, isLoading: nlLoading, error: nlError, usedFallback: nlFallback } =
     useNaturalLanguageQuery();
@@ -109,6 +110,14 @@ export function ChatPanel() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-2 flex items-center justify-between gap-2 border-b border-zinc-100 pb-2 dark:border-zinc-800">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+          Chat
+        </span>
+        <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={clearChat} disabled={nlLoading}>
+          Clear
+        </Button>
+      </div>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1 py-2">
         {messages.length === 0 ? (
           <motion.div

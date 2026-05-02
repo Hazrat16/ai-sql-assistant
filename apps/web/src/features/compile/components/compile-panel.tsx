@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCompileQuery } from "@/hooks/use-compile-query";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { useExecution } from "@/features/dashboard/providers/execution-provider";
 
-export function CompilePanel() {
+export function CompilePanel({ embedded }: { embedded?: boolean }) {
   const activeSql = useDashboardStore((s) => s.activeSql);
   const setActiveQuery = useDashboardStore((s) => s.setActiveQuery);
   const setResultRows = useDashboardStore((s) => s.setResultRows);
@@ -41,47 +41,64 @@ export function CompilePanel() {
     setResultRows(result.rows ?? []);
   }
 
+  const body = (
+    <div className="space-y-3 px-3 py-3">
+      <Textarea
+        value={sqlDraft}
+        onChange={(e) => setSqlDraft(e.target.value)}
+        placeholder="Paste SQL here to compile/validate before execution..."
+        className={embedded ? "min-h-[100px]" : "min-h-[140px]"}
+      />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-xs"
+          onClick={() => setSqlDraft(activeSql ?? "")}
+          disabled={!activeSql || isCompiling || isRunning}
+        >
+          Use active SQL
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="text-xs"
+          onClick={() => void handleCompile()}
+          disabled={isCompiling || isEmpty}
+        >
+          {isCompiling ? "Compiling..." : "Compile"}
+        </Button>
+        <Button type="button" size="sm" className="text-xs" onClick={() => void handleRun()} disabled={isRunning || isCompiling || isEmpty}>
+          {isRunning ? "Running..." : "Run"}
+        </Button>
+      </div>
+
+      {compileError ? (
+        <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
+          {compileError}
+        </p>
+      ) : null}
+      {compileMessage ? (
+        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-200">
+          {compileMessage}
+        </p>
+      ) : null}
+    </div>
+  );
+
+  if (embedded) {
+    return <div className="h-full min-h-0 overflow-y-auto">{body}</div>;
+  }
+
   return (
     <Card className="h-full min-h-0 border-zinc-200/80 dark:border-zinc-800">
       <CardHeader>
         <CardTitle className="text-sm">SQL compiler</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <Textarea
-          value={sqlDraft}
-          onChange={(e) => setSqlDraft(e.target.value)}
-          placeholder="Paste SQL here to compile/validate before execution..."
-          className="min-h-[140px]"
-        />
-
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setSqlDraft(activeSql ?? "")}
-            disabled={!activeSql || isCompiling || isRunning}
-          >
-            Use active SQL
-          </Button>
-          <Button type="button" variant="outline" onClick={() => void handleCompile()} disabled={isCompiling || isEmpty}>
-            {isCompiling ? "Compiling..." : "Compile SQL"}
-          </Button>
-          <Button type="button" onClick={() => void handleRun()} disabled={isRunning || isCompiling || isEmpty}>
-            {isRunning ? "Running..." : "Run SQL"}
-          </Button>
-        </div>
-
-        {compileError ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
-            {compileError}
-          </p>
-        ) : null}
-        {compileMessage ? (
-          <p className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-200">
-            {compileMessage}
-          </p>
-        ) : null}
-      </CardContent>
+      {body}
     </Card>
   );
 }

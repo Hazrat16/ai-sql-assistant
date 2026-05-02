@@ -1,8 +1,8 @@
 "use client";
 
 import type { ChatMessage as ChatMessageModel } from "@/store/dashboard-store";
+import { AssistantLoadingSkeleton } from "./assistant-loading-skeleton";
 import { SqlCodeBlock } from "./sql-code-block";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface ChatMessageProps {
   message: ChatMessageModel;
@@ -28,11 +28,7 @@ export function ChatMessage({ message, onRunSql, onCompileSql, isExecuting, isCo
           {isUser ? "You" : "Assistant"}
         </p>
         {message.status === "pending" && !isUser ? (
-          <div className="space-y-2">
-            <Skeleton className="h-3 w-[75%]" />
-            <Skeleton className="h-3 w-[66%]" />
-            <Skeleton className="h-24 w-full" />
-          </div>
+          <AssistantLoadingSkeleton />
         ) : (
           <>
             <p className="whitespace-pre-wrap">{message.content}</p>
