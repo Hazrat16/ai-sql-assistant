@@ -22,7 +22,7 @@ export function useExecuteQuery() {
         const rows = filterDummyRows(sql);
         const result = { rows };
         setData(result);
-        setUsedFallback(true);
+        setUsedFallback(false);
         return result;
       }
       const databaseUrl = useConnectionStore.getState().externalDatabaseUrl ?? undefined;
@@ -31,6 +31,7 @@ export function useExecuteQuery() {
         ...(databaseUrl ? { databaseUrl } : {}),
       });
       setData(result);
+      setUsedFallback(false);
       return result;
     } catch (e) {
       const rows = filterDummyRows(sql);

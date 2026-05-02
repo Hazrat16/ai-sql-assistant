@@ -9,8 +9,9 @@ export function ResultViewer({ embedded }: { embedded?: boolean }) {
   const rows = useDashboardStore((s) => s.resultRows);
   const exec = useExecution();
 
+  // Only show when the table is actually showing fallback rows from a failed execute (not stale state after clearing results).
   const banner =
-    exec.usedFallback && exec.error ? (
+    rows !== null && exec.usedFallback && exec.error ? (
       <div className="border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
         Execute API failed ({exec.error}). Showing deterministic sample rows for the same column shape.
       </div>

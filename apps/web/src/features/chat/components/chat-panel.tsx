@@ -21,7 +21,7 @@ export function ChatPanel() {
 
   const { mutate: nlMutate, isLoading: nlLoading, error: nlError, usedFallback: nlFallback } =
     useNaturalLanguageQuery();
-  const { mutate: execMutate, isLoading: execLoading } = useExecution();
+  const { mutate: execMutate, isLoading: execLoading, reset: resetExecution } = useExecution();
   const { mutate: compileMutate, isLoading: compileLoading } = useCompileQuery();
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -58,6 +58,7 @@ export function ChatPanel() {
 
     setActiveQuery(result.sql, result.explanation);
     setResultRows(null);
+    resetExecution();
 
     addHistory({
       naturalLanguage: text,
@@ -70,6 +71,7 @@ export function ChatPanel() {
     nlLoading,
     nlMutate,
     patchMessage,
+    resetExecution,
     setActiveQuery,
     setResultRows,
   ]);
@@ -114,7 +116,17 @@ export function ChatPanel() {
         <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
           Chat
         </span>
-        <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={clearChat} disabled={nlLoading}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => {
+            clearChat();
+            resetExecution();
+          }}
+          disabled={nlLoading}
+        >
           Clear
         </Button>
       </div>
