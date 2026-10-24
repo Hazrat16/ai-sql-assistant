@@ -18,11 +18,19 @@ npm workspaces manage dependencies (one `package-lock.json` at the root), and [T
 ## Quick start
 
 ```bash
-npm install
+make dev
+```
 
+This installs dependencies and creates the `.env` files if they're missing, then starts Postgres and Ollama in Docker, pulls the Ollama model if it isn't already there, and runs the backend on :8000 and the web app on :3000. Press Ctrl+C to stop the apps and run `docker compose down`. Database and model volumes are kept between runs.
+
+Run `make` on its own to list the other targets.
+
+To do the same steps by hand:
+
+```bash
+npm install
 cp apps/backend/.env.example apps/backend/.env
 cp apps/web/.env.example apps/web/.env
-
 npm run dev:deps      # Postgres + Ollama in Docker
 npm run dev           # backend on :8000 and web on :3000
 ```
