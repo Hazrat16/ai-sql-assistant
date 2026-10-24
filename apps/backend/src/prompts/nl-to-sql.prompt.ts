@@ -25,7 +25,7 @@ export function buildNlToSqlSystemPrompt(): string {
 
 export function buildNlToSqlUserPrompt(schemaJson: string, userQuery: string): string {
   return [
-    "Database schema (JSON, public tables):",
+    "Database schema (JSON). Tables outside the public schema are named schema.table; use those names exactly:",
     schemaJson,
     "",
     "User question:",

@@ -19,8 +19,7 @@ export function ChatPanel() {
   const addHistory = useDashboardStore((s) => s.addHistory);
   const clearChat = useDashboardStore((s) => s.clearChat);
 
-  const { mutate: nlMutate, isLoading: nlLoading, error: nlError, usedFallback: nlFallback } =
-    useNaturalLanguageQuery();
+  const { mutate: nlMutate, isLoading: nlLoading } = useNaturalLanguageQuery();
   const { mutate: execMutate, isLoading: execLoading, reset: resetExecution } = useExecution();
   const { mutate: compileMutate, isLoading: compileLoading } = useCompileQuery();
 
@@ -45,6 +44,15 @@ export function ChatPanel() {
     });
 
     const { data: result, error: genError } = await nlMutate(text);
+
+    if (!result) {
+      patchMessage(assistantId, {
+        status: "done",
+        content: "I couldn't generate SQL for that request.",
+        error: genError ?? "Failed to generate SQL",
+      });
+      return;
+    }
 
     patchMessage(assistantId, {
       status: "done",
@@ -80,7 +88,7 @@ export function ChatPanel() {
     async (sql: string) => {
       setActiveQuery(sql, useDashboardStore.getState().activeExplanation);
       const res = await execMutate(sql);
-      setResultRows(res.rows ?? []);
+      setResultRows(res?.rows ?? null);
     },
     [execMutate, setActiveQuery, setResultRows],
   );
@@ -154,11 +162,6 @@ export function ChatPanel() {
       </div>
 
       <div className="border-t border-zinc-200 pt-3 dark:border-zinc-800">
-        {nlFallback && nlError ? (
-          <p className="mb-2 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
-            API unavailable ({nlError}). Showing sample SQL so you can still explore the UI.
-          </p>
-        ) : null}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <Textarea ref={inputRef} placeholder="Describe what you want to query…" className="min-h-[72px] flex-1" />
           <Button type="button" className="shrink-0 sm:mb-0.5" onClick={() => void handleSend()} disabled={nlLoading}>

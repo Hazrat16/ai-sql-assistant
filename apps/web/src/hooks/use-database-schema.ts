@@ -30,10 +30,10 @@ export function useDatabaseSchema() {
       setData(result);
       return result;
     } catch (e) {
-      setData(DUMMY_SCHEMA);
-      setUsedFallback(true);
+      // Don't show the bundled sample schema here: after a failed connect it would look like the real database.
+      setData(null);
       setError(e instanceof Error ? e.message : "Failed to load schema");
-      return DUMMY_SCHEMA;
+      return null;
     } finally {
       setIsLoading(false);
     }

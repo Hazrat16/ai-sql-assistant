@@ -38,7 +38,7 @@ export function CompilePanel({ embedded }: { embedded?: boolean }) {
 
   async function handleRun() {
     const result = await runMutate(sqlDraft);
-    setResultRows(result.rows ?? []);
+    setResultRows(result?.rows ?? null);
   }
 
   const body = (

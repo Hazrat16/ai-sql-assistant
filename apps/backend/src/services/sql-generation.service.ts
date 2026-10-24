@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { loadEnv } from "../config/env.js";
 import { AppError } from "../utils/errors.js";
 import type { NaturalQueryResponse } from "@ai-sql-assistant/shared";
-import { fetchPublicSchema, type SchemaPayload, type SchemaTable } from "./schema-introspection.service.js";
+import { fetchSchema, type SchemaPayload, type SchemaTable } from "./schema-introspection.service.js";
 import { generateNlSqlResponse } from "./ai.service.js";
 import { assertExecutableSelect } from "./query-validation.service.js";
 import { getNlQueryCache, makeNlQueryCacheKey, setNlQueryCache } from "./query-cache.service.js";
@@ -12,6 +12,55 @@ const env = loadEnv();
 
 function fingerprintSchema(schemaJson: string): string {
   return createHash("sha256").update(schemaJson).digest("hex");
+}
+
+/** Lower-cased words of 3+ chars; a trailing "s" is dropped so "orders" matches "order". */
+function keywords(text: string): string[] {
+  const words = text
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length >= 3)
+    .map((w) => (w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w));
+  return [...new Set(words)];
+}
+
+function relevanceScore(table: SchemaTable, queryWords: string[]): number {
+  const tableWords = keywords(table.name);
+  const columnWords = new Set(table.columns.flatMap((c) => keywords(c.name)));
+  let score = 0;
+  for (const w of queryWords) {
+    if (tableWords.some((t) => t.includes(w) || w.includes(t))) score += 3;
+    if (columnWords.has(w)) score += 1;
+  }
+  return score;
+}
+
+/**
+ * Keeps the schema sent to the model under `maxChars`. Small schemas pass through unchanged;
+ * large ones (hundreds of tables would overflow a local model's context) keep the tables
+ * whose names/columns best match the question.
+ */
+function schemaForPrompt(schema: SchemaPayload, userQuery: string, maxChars: number): SchemaPayload {
+  if (JSON.stringify(schema).length <= maxChars) return schema;
+
+  const queryWords = keywords(userQuery);
+  const ranked = schema.tables
+    .map((table, index) => ({ table, index, score: relevanceScore(table, queryWords) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+
+  const picked: SchemaTable[] = [];
+  let size = JSON.stringify({ tables: [] }).length;
+  for (const { table } of ranked) {
+    const tableSize = JSON.stringify(table).length + 1;
+    if (size + tableSize > maxChars) continue;
+    picked.push(table);
+    size += tableSize;
+  }
+  logger.debug(
+    { totalTables: schema.tables.length, sentTables: picked.length },
+    "Schema trimmed to fit AI_SCHEMA_MAX_CHARS",
+  );
+  return { tables: picked };
 }
 
 function pickTable(userQuery: string, schema: SchemaPayload): SchemaTable | null {
@@ -149,10 +198,10 @@ export async function generateSqlForNaturalLanguage(
     throw new AppError("VALIDATION_ERROR", "Query text is required", 400);
   }
 
-  const schema = await fetchPublicSchema(
+  const schema = await fetchSchema(
     options?.databaseUrl?.trim() ? { databaseUrl: options.databaseUrl.trim() } : undefined,
   );
-  const schemaJson = JSON.stringify(schema);
+  const schemaJson = JSON.stringify(schemaForPrompt(schema, trimmed, env.AI_SCHEMA_MAX_CHARS));
   const fp = fingerprintSchema(schemaJson);
   const cacheKey = makeNlQueryCacheKey(trimmed, fp);
   const ttlMs = env.QUERY_CACHE_TTL_SECONDS * 1000;

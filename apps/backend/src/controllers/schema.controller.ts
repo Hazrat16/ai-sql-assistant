@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { fetchPublicSchema } from "../services/schema-introspection.service.js";
+import { fetchSchema } from "../services/schema-introspection.service.js";
 import { toErrorResponse } from "../utils/errors.js";
 import { redactDatabaseUrl } from "../utils/redact-db-url.js";
 
@@ -11,7 +11,7 @@ const connectBodySchema = z.object({
 export async function getSchemaController(req: FastifyRequest, reply: FastifyReply) {
   req.log.info("Schema request received");
   try {
-    const schema = await fetchPublicSchema();
+    const schema = await fetchSchema();
     req.log.info({ tableCount: schema.tables.length }, "Schema response ready");
     return reply.send(schema);
   } catch (err) {
@@ -32,7 +32,7 @@ export async function postSchemaConnectController(req: FastifyRequest, reply: Fa
 
   req.log.info({ target: redactDatabaseUrl(parsed.data.databaseUrl) }, "Schema connect request");
   try {
-    const schema = await fetchPublicSchema({ databaseUrl: parsed.data.databaseUrl });
+    const schema = await fetchSchema({ databaseUrl: parsed.data.databaseUrl });
     req.log.info({ tableCount: schema.tables.length }, "Schema connect ready");
     return reply.send(schema);
   } catch (err) {

@@ -26,6 +26,18 @@ export class AppError extends Error {
   }
 }
 
+/** Underlying reason from a driver/network error, e.g. `column "x" does not exist`. */
+export function describeCause(cause: unknown): string {
+  // Node reports "connection refused on every resolved address" as an AggregateError with an empty message.
+  if (cause instanceof AggregateError && cause.errors.length) {
+    return describeCause(cause.errors[0]);
+  }
+  if (cause instanceof Error) {
+    return cause.message || (cause as { code?: string }).code || cause.name;
+  }
+  return String(cause);
+}
+
 export function toErrorResponse(err: unknown) {
   if (err instanceof AppError) {
     return {

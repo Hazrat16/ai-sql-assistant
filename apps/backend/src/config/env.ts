@@ -78,6 +78,8 @@ const envSchema = z.object({
     }, z.enum(["true", "false"]))
     .transform((v) => v === "true"),
   QUERY_CACHE_TTL_SECONDS: z.coerce.number().int().min(0).default(60),
+  /** Max characters of schema JSON sent to the model; larger schemas keep only the tables most relevant to the question. */
+  AI_SCHEMA_MAX_CHARS: z.coerce.number().int().min(500).default(8000),
   /**
    * When true: no Postgres on startup; /schema and /execute use synthetic data.
    * NL→SQL still runs (OpenAI/Ollama) or falls back to offline rules from the stub schema.

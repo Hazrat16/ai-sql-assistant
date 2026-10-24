@@ -11,18 +11,15 @@ export function useExecuteQuery() {
   const [data, setData] = useState<ExecuteQueryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [usedFallback, setUsedFallback] = useState(false);
 
-  const mutate = useCallback(async (sql: string) => {
+  const mutate = useCallback(async (sql: string): Promise<ExecuteQueryResponse | null> => {
     setIsLoading(true);
     setError(null);
-    setUsedFallback(false);
     try {
       if (!isApiConfigured()) {
         const rows = filterDummyRows(sql);
         const result = { rows };
         setData(result);
-        setUsedFallback(false);
         return result;
       }
       const databaseUrl = useConnectionStore.getState().externalDatabaseUrl ?? undefined;
@@ -31,15 +28,12 @@ export function useExecuteQuery() {
         ...(databaseUrl ? { databaseUrl } : {}),
       });
       setData(result);
-      setUsedFallback(false);
       return result;
     } catch (e) {
-      const rows = filterDummyRows(sql);
-      const result = { rows };
-      setData(result);
-      setUsedFallback(true);
+      // Never substitute sample rows for a real failure — they look like genuine results.
+      setData(null);
       setError(e instanceof Error ? e.message : "Failed to execute SQL");
-      return result;
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -48,10 +42,9 @@ export function useExecuteQuery() {
   const reset = useCallback(() => {
     setData(null);
     setError(null);
-    setUsedFallback(false);
   }, []);
 
-  return { data, error, isLoading, usedFallback, mutate, reset };
+  return { data, error, isLoading, mutate, reset };
 }
 
 /** When using dummy data, return fewer rows for LIMIT-like prompts */

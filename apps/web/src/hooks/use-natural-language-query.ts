@@ -32,12 +32,11 @@ export function useNaturalLanguageQuery() {
       setData(result);
       return { data: result, error: null as string | null, usedFallback: false };
     } catch (e) {
-      const fallback = { ...DUMMY_NATURAL_RESPONSE };
-      setData(fallback);
-      setUsedFallback(true);
+      // No sample SQL on a real failure: it would be written against tables the database doesn't have.
+      setData(null);
       const message = e instanceof Error ? e.message : "Failed to generate SQL";
       setError(message);
-      return { data: fallback, error: message, usedFallback: true };
+      return { data: null, error: message, usedFallback: false };
     } finally {
       setIsLoading(false);
     }

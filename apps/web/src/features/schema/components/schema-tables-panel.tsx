@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDatabaseSchema } from "@/hooks/use-database-schema";
 
 export function SchemaTablesPanel() {
-  const { data, error, isLoading, usedFallback, refetch } = useDatabaseSchema();
+  const { data, error, isLoading, refetch } = useDatabaseSchema();
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
   const tables = useMemo(() => data?.tables ?? [], [data?.tables]);
@@ -18,7 +18,9 @@ export function SchemaTablesPanel() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 px-1">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">Public tables</span>
+        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          Tables{!isLoading && !error ? ` (${tables.length})` : ""}
+        </span>
         <Button
           type="button"
           variant="ghost"
@@ -29,9 +31,17 @@ export function SchemaTablesPanel() {
           Refresh
         </Button>
       </div>
-      {usedFallback && error ? (
-        <p className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
-          {error}. Showing bundled sample schema.
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 px-2 py-1.5 text-[11px] text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200"
+        >
+          {error}
+        </p>
+      ) : null}
+      {!isLoading && !error && tables.length === 0 ? (
+        <p className="px-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+          No tables found. The connected role may not have access to any tables.
         </p>
       ) : null}
       <div className="min-h-0 flex-1 overflow-y-auto">

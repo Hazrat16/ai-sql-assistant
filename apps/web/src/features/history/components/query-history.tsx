@@ -23,7 +23,7 @@ export function QueryHistory({ embedded }: { embedded?: boolean }) {
       status: "done",
     });
     const res = await exec.mutate(item.sql);
-    setResultRows(res.rows ?? []);
+    setResultRows(res?.rows ?? null);
   };
 
   const list =

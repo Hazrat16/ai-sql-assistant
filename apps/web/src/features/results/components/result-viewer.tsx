@@ -9,13 +9,14 @@ export function ResultViewer({ embedded }: { embedded?: boolean }) {
   const rows = useDashboardStore((s) => s.resultRows);
   const exec = useExecution();
 
-  // Only show when the table is actually showing fallback rows from a failed execute (not stale state after clearing results).
-  const banner =
-    rows !== null && exec.usedFallback && exec.error ? (
-      <div className="border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
-        Execute API failed ({exec.error}). Showing deterministic sample rows for the same column shape.
-      </div>
-    ) : null;
+  const banner = exec.error ? (
+    <div
+      role="alert"
+      className="border-b border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200"
+    >
+      Query failed: {exec.error}
+    </div>
+  ) : null;
 
   const tableBlock = (
     <div className="min-h-0 flex-1 px-2 pb-3 pt-1">
@@ -27,7 +28,7 @@ export function ResultViewer({ embedded }: { embedded?: boolean }) {
     return (
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {banner}
-        {tableBlock}
+        {exec.error ? null : tableBlock}
       </div>
     );
   }
@@ -42,7 +43,7 @@ export function ResultViewer({ embedded }: { embedded?: boolean }) {
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col p-0">
         {banner}
-        {tableBlock}
+        {exec.error ? null : tableBlock}
       </CardContent>
     </Card>
   );
