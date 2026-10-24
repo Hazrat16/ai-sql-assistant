@@ -12,7 +12,7 @@ function getAstRoot(parsed: unknown): AstNode | null {
   if (!isObj(parsed) || !("ast" in parsed)) return null;
   const ast = (parsed as { ast: unknown }).ast;
   if (Array.isArray(ast)) {
-    const only = ast[0];
+    const only: unknown = ast[0];
     return isObj(only) ? only : null;
   }
   return isObj(ast) ? ast : null;
@@ -35,7 +35,7 @@ function rewriteExpr(node: unknown, scope: Map<string, string>, changed: { flag:
   }
   if (!isObj(node)) return;
 
-  const n = node as AstNode;
+  const n = node;
 
   if (n.type === "column_ref") {
     if (typeof n.table === "string") {
@@ -70,7 +70,7 @@ function rewriteSelectAst(sel: AstNode, outerScope: Map<string, string>, changed
   if (Array.isArray(sel.with)) {
     for (const w of sel.with) {
       if (isObj(w) && isObj(w.stmt) && w.stmt.type === "select") {
-        rewriteSelectAst(w.stmt as AstNode, outerScope, changed);
+        rewriteSelectAst(w.stmt, outerScope, changed);
       }
     }
   }
@@ -80,11 +80,11 @@ function rewriteSelectAst(sel: AstNode, outerScope: Map<string, string>, changed
   if (Array.isArray(sel.from)) {
     for (const raw of sel.from) {
       if (!isObj(raw)) continue;
-      const entry = raw as AstNode;
+      const entry = raw;
 
       const nested = entry.expr;
       if (isObj(nested) && nested.type === "select") {
-        rewriteSelectAst(nested as AstNode, scope, changed);
+        rewriteSelectAst(nested, scope, changed);
       }
 
       if (entry.on) rewriteExpr(entry.on, scope, changed);
@@ -108,7 +108,7 @@ function rewriteSelectAst(sel: AstNode, outerScope: Map<string, string>, changed
   const unionNext = sel._next;
   const setOp = sel.set_op;
   if (isObj(unionNext) && typeof setOp === "string") {
-    rewriteSelectAst(unionNext as AstNode, outerScope, changed);
+    rewriteSelectAst(unionNext, outerScope, changed);
   }
 }
 
@@ -118,7 +118,7 @@ function rewriteSelectAst(sel: AstNode, outerScope: Map<string, string>, changed
  */
 export function applyPgQualifiedAliasRewriteToAst(astRoot: Record<string, unknown>): boolean {
   const state = { flag: false };
-  rewriteSelectAst(astRoot as AstNode, new Map(), state);
+  rewriteSelectAst(astRoot, new Map(), state);
   return state.flag;
 }
 

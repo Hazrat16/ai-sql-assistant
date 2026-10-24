@@ -27,7 +27,7 @@ export function SqlCodeBlock({ sql, onRun, onCompile, isRunning, isCompiling }: 
           {onCompile ? (
             <Button
               size="sm"
-              variant="outline"
+              variant="ghost"
               type="button"
               onClick={onCompile}
               disabled={isCompiling || isRunning}

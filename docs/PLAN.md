@@ -12,13 +12,14 @@ We work through the phases in order. Each task has a **Done when** line; tick th
 
 So every later change is checked automatically.
 
-- [ ] **Commit the external-DB fixes** (all schemas, real errors, no fake fallback data).
+- [x] **Commit the external-DB fixes** (all schemas, real errors, no fake fallback data).
   Done when: committed on `main`.
-- [ ] **Fix existing lint and type errors** — 8 ESLint errors in `pg-qualified-alias-rewrite.service.ts` / `query-validation.service.ts`, 1 type error in `sql-code-block.tsx` (`variant="outline"`).
+- [x] **Fix existing lint and type errors** — 8 ESLint errors in `pg-qualified-alias-rewrite.service.ts` / `query-validation.service.ts`, 1 type error in `sql-code-block.tsx` (`variant="outline"`).
   Done when: `npm run lint` and `npm run typecheck` pass.
-- [ ] **Add Vitest to the backend** with first tests for the SQL validator: allowed SELECTs, and a list of attacks it must reject (`DELETE`, `SELECT … INTO`, multi-statement, `pg_sleep`, writable CTEs).
+- [x] **Add Vitest to the backend** with first tests for the SQL validator: allowed SELECTs, and a list of attacks it must reject (`DELETE`, `SELECT … INTO`, multi-statement, `pg_sleep`, writable CTEs).
   Done when: `npm test` runs and passes.
-- [ ] **GitHub Actions CI** — typecheck, lint, test on every push/PR, with a Postgres service container.
+  Result: 44 tests. They exposed that dangerous functions (`pg_sleep`, `pg_read_file`, `pg_terminate_backend`, `set_config`, `lo_*`, `dblink`, `query_to_xml`) passed validation; the validator now walks the whole AST and blocks them.
+- [x] **GitHub Actions CI** — typecheck, lint, test, migrations (applied twice to check idempotency) and build on every push/PR, with a Postgres service container.
   Done when: green check on GitHub.
 
 ## Phase 1 — Security for a public deploy (week 1)
@@ -68,6 +69,8 @@ This phase produces the numbers for the CV.
   Done when: public URL works end to end over HTTPS.
 - [ ] **Read-only demo database** — hosted Pagila with a read-only role; "Try with demo database" button that needs no setup.
   Done when: a new visitor can sign up and get a result in under a minute.
+- [ ] **Least-privilege database role** — the app connects with a non-superuser role that can only read the demo/app tables it needs; document "use a read-only role" for user connections. The function blocklist in the validator is defence in depth, not the boundary.
+  Done when: production `DATABASE_URL` uses that role and `SELECT pg_read_file('/etc/passwd')` fails even with the validator bypassed.
 - [ ] **Monitoring** — error tracking (e.g. Sentry) and uptime check on `/health`.
   Done when: a thrown test error shows up in the dashboard.
 

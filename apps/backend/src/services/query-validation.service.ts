@@ -17,7 +17,13 @@ function getAstFromParseResult(parsed: unknown): AstNode | AstNode[] {
     throw new AppError("INVALID_SQL", "Unable to analyze SQL statement", 400);
   }
   const ast = (parsed as { ast: unknown }).ast;
-  if (Array.isArray(ast)) return ast as unknown as AstNode[];
+  if (Array.isArray(ast)) {
+    const statements: unknown[] = ast;
+    if (!statements.every(isObject)) {
+      throw new AppError("INVALID_SQL", "Unable to analyze SQL statement", 400);
+    }
+    return statements;
+  }
   if (!isObject(ast)) {
     throw new AppError("INVALID_SQL", "Unable to analyze SQL statement", 400);
   }
@@ -84,11 +90,71 @@ function walkSelectChain(selectAst: AstNode) {
   }
 }
 
+/**
+ * Functions that are legal inside a SELECT but can sleep, read server files, signal other
+ * backends, change settings, take locks, or run SQL from a string (bypassing this validator).
+ * A deny-list can't be complete: the real boundary is a non-superuser, read-only database role.
+ */
+const FORBIDDEN_FUNCTIONS = new Set([
+  "set_config",
+  "pg_terminate_backend",
+  "pg_cancel_backend",
+  "pg_reload_conf",
+  "pg_rotate_logfile",
+  "pg_promote",
+  "pg_switch_wal",
+  "pg_stat_file",
+  "pg_notify",
+  "cursor_to_xml",
+  "cursor_to_xmlschema",
+]);
+
+const FORBIDDEN_FUNCTION_PREFIXES = [
+  "pg_sleep",
+  "pg_read_",
+  "pg_ls_",
+  "pg_advisory",
+  "pg_create_",
+  "pg_drop_",
+  "pg_logical_",
+  "pg_replication_",
+  "lo_",
+  "dblink",
+  "query_to_xml",
+];
+
+function functionName(node: AstNode): string | null {
+  const name = node.name;
+  if (typeof name === "string") return name.toLowerCase();
+  if (!isObject(name) || !Array.isArray(name.name)) return null;
+  // Schema-qualified calls (pg_catalog.pg_sleep) put the schema elsewhere; the last part is the function.
+  const last: unknown = name.name[name.name.length - 1];
+  return isObject(last) && typeof last.value === "string" ? last.value.toLowerCase() : null;
+}
+
+/** Walks the whole AST so calls nested in subqueries, CTEs, FROM or WHERE are caught too. */
+function assertNoForbiddenFunctions(node: unknown): void {
+  if (Array.isArray(node)) {
+    for (const item of node) assertNoForbiddenFunctions(item);
+    return;
+  }
+  if (!isObject(node)) return;
+
+  if (node.type === "function") {
+    const name = functionName(node);
+    if (name && (FORBIDDEN_FUNCTIONS.has(name) || FORBIDDEN_FUNCTION_PREFIXES.some((p) => name.startsWith(p)))) {
+      throw new AppError("FORBIDDEN_SQL", `Function "${name}" is not allowed`, 403);
+    }
+  }
+  for (const value of Object.values(node)) assertNoForbiddenFunctions(value);
+}
+
 function validateAstNode(node: AstNode) {
   const type = typeof node.type === "string" ? node.type.toLowerCase() : "";
 
   if (type === "select") {
     walkSelectChain(node);
+    assertNoForbiddenFunctions(node);
     return;
   }
 
