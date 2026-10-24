@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { NaturalQueryResponse } from "../types/api.js";
+import type { NaturalQueryResponse } from "@ai-sql-assistant/shared";
 
 interface CacheEntry {
   value: NaturalQueryResponse;

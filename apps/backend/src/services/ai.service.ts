@@ -3,7 +3,7 @@ import { z } from "zod";
 import { loadEnv } from "../config/env.js";
 import { AppError } from "../utils/errors.js";
 import { buildNlToSqlSystemPrompt, buildNlToSqlUserPrompt } from "../prompts/nl-to-sql.prompt.js";
-import type { NaturalQueryResponse } from "../types/api.js";
+import type { NaturalQueryResponse } from "@ai-sql-assistant/shared";
 
 const env = loadEnv();
 

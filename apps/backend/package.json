@@ -1,23 +1,25 @@
 {
-  "name": "ai-sql-assistant-backend",
+  "name": "@ai-sql-assistant/backend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "dev:stub": "STUB_DATABASE=true tsx watch src/server.ts",
-    "dev:deps": "docker compose up -d",
-    "dev:stack": "docker compose up -d && tsx src/dev/wait-for-dev-deps.ts && tsx watch src/server.ts",
-    "dev:deps:down": "docker compose down",
+    "dev:deps": "docker compose -f ../../docker-compose.yml up -d",
+    "dev:stack": "docker compose -f ../../docker-compose.yml up -d && tsx src/dev/wait-for-dev-deps.ts && tsx watch src/server.ts",
+    "dev:deps:down": "docker compose -f ../../docker-compose.yml down",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",
-    "db:migrate": "tsx src/db/run-migrations.ts"
+    "db:migrate": "tsx src/db/run-migrations.ts",
+    "typecheck": "tsc --noEmit"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
+    "@ai-sql-assistant/shared": "*",
     "@fastify/cors": "^11.0.1",
     "@fastify/helmet": "^13.0.1",
     "@fastify/rate-limit": "^10.2.2",

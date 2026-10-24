@@ -3,7 +3,7 @@ import { pool } from "../db/pool.js";
 import { loadEnv } from "../config/env.js";
 import { assertExecutableSelect } from "./query-validation.service.js";
 import { AppError } from "../utils/errors.js";
-import type { SqlRow } from "../types/api.js";
+import type { SqlRow } from "@ai-sql-assistant/shared";
 import { assertExternalDatabaseAllowed, withEphemeralPgConnection } from "./external-connection.service.js";
 
 function wrapPostgresExecuteError(cause: unknown, defaultLabel: string): AppError {

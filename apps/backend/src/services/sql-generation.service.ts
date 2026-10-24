@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { loadEnv } from "../config/env.js";
 import { AppError } from "../utils/errors.js";
-import type { NaturalQueryResponse } from "../types/api.js";
+import type { NaturalQueryResponse } from "@ai-sql-assistant/shared";
 import { fetchPublicSchema, type SchemaPayload, type SchemaTable } from "./schema-introspection.service.js";
 import { generateNlSqlResponse } from "./ai.service.js";
 import { assertExecutableSelect } from "./query-validation.service.js";

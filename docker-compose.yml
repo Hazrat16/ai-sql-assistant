@@ -1,6 +1,11 @@
-# One-shot real stack + API: npm run dev:stack
-# Backend only (expects Postgres already): npm run dev
-# No DB: STUB_DATABASE=true npm run dev  or  npm run dev:stub
+# Start Postgres + Ollama from the repo root: npm run dev:deps
+# One-shot real stack + API: npm run dev:stack -w @ai-sql-assistant/backend
+# No DB: npm run dev:stub -w @ai-sql-assistant/backend
+
+# Keep the project name from when this file lived in the backend repo, so the
+# existing postgres_data / ollama_data volumes are reused.
+name: ai-sql-assistant-backend
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -14,7 +19,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+      - ./apps/backend/db/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d ai_sql_assistant"]
       interval: 2s

@@ -1,0 +1,26 @@
+{
+  "name": "ai-sql-assistant",
+  "private": true,
+  "packageManager": "npm@10.9.9",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:backend": "turbo run dev --filter=@ai-sql-assistant/backend",
+    "dev:web": "turbo run dev --filter=@ai-sql-assistant/web",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "dev:deps": "docker compose up -d",
+    "dev:deps:down": "docker compose down",
+    "db:migrate": "npm run db:migrate -w @ai-sql-assistant/backend"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.10"
+  }
+}
